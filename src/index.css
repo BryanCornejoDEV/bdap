@@ -1,0 +1,51 @@
+@import "tailwindcss/tailwind.css";
+
+/* ===== Material Dashboard 2 Theme ===== */
+:root{
+  --md-bg: #f5f7fb;           /* canvas */
+  --md-card: #ffffff;         /* cards */
+  --md-text: #2b3440;         /* primary text */
+  --md-text-muted: #6b7280;   /* secondary */
+  --md-border: #e5e7eb;       /* card borders */
+  --md-primary: #3b82f6;      /* blue-500 */
+  --md-primary-2: #06b6d4;    /* cyan-500 */
+  --md-success: #22c55e;
+  --md-warning: #f59e0b;
+  --md-danger:  #ef4444;
+  --md-shadow:  0 8px 22px rgba(0,0,0,.08);
+  --md-shadow-2:0 14px 30px rgba(0,0,0,.12);
+}
+
+.dark{
+  --md-bg: #0f1115;
+  --md-card: #171a21;
+  --md-text: #e5e7eb;
+  --md-text-muted: #9ca3af;
+  --md-border: #262a33;
+  --md-shadow: 0 10px 24px rgba(0,0,0,.45);
+  --md-shadow-2:0 16px 40px rgba(0,0,0,.55);
+}
+
+/* Canvas */
+body{ background: var(--md-bg); color: var(--md-text); }
+
+/* Helpers md2 */
+.md2-card{
+  background: var(--md-card);
+  border: 1px solid var(--md-border);
+  border-radius: 1rem;           /* rounded-2xl-ish */
+  box-shadow: var(--md-shadow);
+}
+.md2-card-lg{ border-radius: 1.25rem; box-shadow: var(--md-shadow-2); }
+
+.md2-chip{
+  display:inline-flex; align-items:center; gap:.5rem;
+  border-radius:.75rem; padding:.375rem .625rem;
+  background: #f3f4f6; color:#111827; font-size:.75rem; font-weight:600;
+}
+.dark .md2-chip{ background:#1f2430; color:#e5e7eb; }
+
+.md2-grad{ /* azul–cian para botones/activos */
+  background-image: linear-gradient(135deg, var(--md-primary), var(--md-primary-2));
+  color:white;
+}
