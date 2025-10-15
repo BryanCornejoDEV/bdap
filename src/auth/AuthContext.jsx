@@ -42,7 +42,7 @@ export function AuthProvider({ children }) {
     }
   }, [token]);
 
-  const login = async ({ email, password }) => {
+  const login = async ({ email }) => {
     // Para demo: genera JWT decodificable
     const role = email.includes("admin") ? "admin" : "analyst";
     const payload = {
@@ -61,4 +61,5 @@ export function AuthProvider({ children }) {
   return <AuthCtx.Provider value={value}>{children}</AuthCtx.Provider>;
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => useContext(AuthCtx);

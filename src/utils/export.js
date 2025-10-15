@@ -23,3 +23,20 @@ XLSX.utils.book_append_sheet(wb, ws, sheetName);
 const wbout = XLSX.write(wb, { bookType: "xlsx", type: "array" });
 saveAs(new Blob([wbout], { type: "application/octet-stream" }), `${sheetName}.xlsx`);
 }
+
+export function exportToCSV({ filename = "data.csv", rows = [] }) {
+	if (!rows.length) {
+		saveAs(new Blob([""], { type: "text/csv;charset=utf-8;" }), filename);
+		return;
+	}
+	const headers = Object.keys(rows[0]);
+	const escapeCsv = (val) => {
+		if (val == null) return "";
+		const s = String(val).replace(/"/g, '""');
+		if (s.search(/[",\n;]/g) >= 0) return '"' + s + '"';
+		return s;
+	};
+	const csv = [headers.join(","), ...rows.map((r) => headers.map((h) => escapeCsv(r[h])).join(","))].join("\n");
+	const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+	saveAs(blob, filename);
+}

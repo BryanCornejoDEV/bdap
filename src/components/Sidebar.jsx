@@ -12,7 +12,7 @@ export default function Sidebar(){
       : `${itemBase} hover:bg-white/10 text-white/80`;
 
   return (
-    <aside className="hidden md:flex w-72 shrink-0">
+    <aside className="hidden md:flex w-72 shrink-0" aria-label="Barra lateral">
       <div
         className="md2-card-lg p-4 w-full"
         style={{ background: "linear-gradient(180deg,#0f172a,#0b1220)" }}
@@ -25,7 +25,7 @@ export default function Sidebar(){
           </div>
         </div>
 
-        <nav className="grid gap-2">
+  <nav className="grid gap-2" aria-label="Navegación principal">
           <NavLink to="/" end className={active}>📊 Dashboard</NavLink>
           <NavLink to="/reports" className={active}>📄 Reports</NavLink>
           <a className={`${itemBase} hover:bg-white/10 text-white/80`} href="#">

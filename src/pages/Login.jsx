@@ -18,13 +18,15 @@ nav("/");
 
 return (
 <div className="min-h-screen grid place-items-center p-6">
-<form onSubmit={submit} className="w-full max-w-sm space-y-3">
+<form onSubmit={submit} className="w-full max-w-sm space-y-3 md2-card p-6">
 <h1 className="text-2xl font-semibold">BDAP — Iniciar sesión</h1>
-<input className="border w-full p-2" placeholder="Email" value={form.email}
+<label className="block text-sm opacity-80">Email</label>
+<input className="border w-full p-2 rounded" placeholder="Email" value={form.email}
 onChange={(e)=>setForm(v=>({...v,email:e.target.value}))} />
-<input className="border w-full p-2" placeholder="Password" type="password" value={form.password}
+<label className="block text-sm opacity-80">Password</label>
+<input className="border w-full p-2 rounded" placeholder="Password" type="password" value={form.password}
 onChange={(e)=>setForm(v=>({...v,password:e.target.value}))} />
-<button className="bg-black text-white px-4 py-2 w-full">Entrar</button>
+<button className="md2-grad text-white px-4 py-2 w-full rounded">Entrar</button>
 </form>
 </div>
 );

@@ -1,12 +1,36 @@
-# React + Vite
+# BDAP – Dashboard Analytics Platform
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Aplicación React con Vite + Tailwind para mostrar KPIs, tablas y gráficos. Incluye autenticación sencilla con JWT simulado, integración con React Query y utilidades de exportación (PDF/Excel/CSV).
 
-Currently, two official plugins are available:
+## Requisitos
+- Node 18+
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Scripts
+- dev: iniciar servidor de desarrollo
+- build: compilar para producción
+- preview: servir build localmente
+- lint: ejecutar ESLint
 
-## Expanding the ESLint configuration
+## Variables de entorno
+Crear un archivo `.env` basado en `.env.example`:
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```
+VITE_API_BASE_URL=/api
+```
+
+## Estructura
+- `src/auth`: contexto y hook de autenticación
+- `src/components`: Layout, NavBar, Sidebar, Charts, Table, etc.
+- `src/hooks`: hooks para datos (useApi)
+- `src/pages`: páginas (Dashboard, Reports, Login)
+- `src/services`: axios apiClient + integraciones
+- `src/utils`: exportación a PDF, Excel y CSV
+
+## Desarrollo
+1. Instala dependencias
+2. Crea `.env`
+3. Ejecuta `npm run dev`
+
+## Notas
+- El token es de demostración y no está firmado (solo para desarrollo). Implementar autenticación real en producción.
+- React Query está configurado con `staleTime` de 60s y `retry` mínimo.
