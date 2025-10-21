@@ -25,15 +25,13 @@ export default function Sidebar(){
           </div>
         </div>
 
-  <nav className="grid gap-2" aria-label="Navegación principal">
+        <nav className="grid gap-2" aria-label="Navegación principal">
           <NavLink to="/" end className={active}>📊 Dashboard</NavLink>
           <NavLink to="/reports" className={active}>📄 Reports</NavLink>
-          <a className={`${itemBase} hover:bg-white/10 text-white/80`} href="#">
-            🔔 Notifications
-          </a>
-          <a className={`${itemBase} hover:bg-white/10 text-white/80`} href="#">
-            👤 Profile
-          </a>
+          <NavLink to="/integrations" className={active}>� Integrations</NavLink>
+          <NavLink to="/users" className={active}>👥 Users</NavLink>
+          <NavLink to="/profile" className={active}>🧑 Profile</NavLink>
+          <NavLink to="/settings" className={active}>⚙️ Settings</NavLink>
         </nav>
 
         <div className="mt-6 p-4 md2-card bg-white/10 border-white/10 text-white/90">

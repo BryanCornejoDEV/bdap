@@ -5,6 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:server": "cd server && npm run start",
+    "dev:server:watch": "cd server && npm run dev",
+    "db:push": "cd server && npm run db:push",
+    "db:seed": "cd server && npm run seed",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"

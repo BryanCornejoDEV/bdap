@@ -1,14 +1,11 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Layout from "../components/Layout";
 import FiltersBar from "../components/FiltersBar.jsx";
 import ChartCard from "../components/ChartCard.jsx";
+import { useGet } from "../hooks/useApi";
 
-const salesByMonth = [
-  { month: "Ene", revenue: 12000, orders: 320 },
-  { month: "Feb", revenue: 15500, orders: 380 },
-  { month: "Mar", revenue: 14200, orders: 350 },
-  { month: "Abr", revenue: 21000, orders: 480 },
-];
+// Usamos el primer reporte (seed)
+const DEFAULT_REPORT_ID = 1;
 
 function StatCard({ icon = "📦", label, value, deltaText, color = "blue" }) {
   const iconBg = {
@@ -41,6 +38,14 @@ function StatCard({ icon = "📦", label, value, deltaText, color = "blue" }) {
 
 export default function Dashboard() {
   const [filters, setFilters] = useState({ range: "last_30", source: "all" });
+  const { data: rows } = useGet(`/reports/${DEFAULT_REPORT_ID}/rows`);
+  const stats = useMemo(() => {
+    const d = rows || [];
+    const totalRevenue = d.reduce((a, r) => a + (r.revenue || 0), 0);
+    const totalOrders = d.reduce((a, r) => a + (r.orders || 0), 0);
+    const bookings = d.length ? Math.round(totalOrders / d.length) : 0;
+    return { totalRevenue, totalOrders, bookings };
+  }, [rows]);
 
   return (
     <Layout>
@@ -63,24 +68,24 @@ export default function Dashboard() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-        <StatCard label="Bookings" value="281" deltaText="+55% vs semana pasada" color="blue" icon="🗂️" />
-        <StatCard label="Usuarios hoy" value="2,300" deltaText="+3% vs mes pasado" color="blue" icon="📊" />
-        <StatCard label="Ingresos" value="$34k" deltaText="+1% vs ayer" color="green" icon="🏬" />
-        <StatCard label="Seguidores" value="+91" deltaText="Actualizado" color="pink" icon="👥" />
+        <StatCard label="Bookings" value={String(stats.bookings)} deltaText="Demo" color="blue" icon="�" />
+        <StatCard label="Órdenes" value={String(stats.totalOrders)} deltaText="Acumulado" color="blue" icon="📊" />
+        <StatCard label="Ingresos" value={`$${stats.totalRevenue.toLocaleString()}`} deltaText="Acumulado" color="green" icon="🏬" />
+        <StatCard label="Seguidores" value="+91" deltaText="Demo" color="pink" icon="👥" />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
         <ChartCard
           title="Ingresos por mes"
           type="line"
-          data={salesByMonth}
+          data={rows || []}
           xKey="month"
           lines={[{ dataKey: "revenue" }]}
         />
         <ChartCard
           title="Órdenes por mes"
           type="bar"
-          data={salesByMonth}
+          data={rows || []}
           xKey="month"
           bars={[{ dataKey: "orders" }]}
         />

@@ -1,20 +1,30 @@
 import Layout from "../components/Layout";
-import DataTable from "../components/DataTable";
-
-const rows = [
-  { month: "Ene", revenue: 12000, orders: 320 },
-  { month: "Feb", revenue: 15500, orders: 380 },
-  { month: "Mar", revenue: 14200, orders: 350 },
-  { month: "Abr", revenue: 21000, orders: 480 },
-  { month: "May", revenue: 18500, orders: 420 },
-  { month: "Jun", revenue: 22000, orders: 510 },
-];
+import { useGet } from "../hooks/useApi";
+import { Link } from "react-router-dom";
 
 export default function Reports() {
+  const { data: reports, isLoading } = useGet('/reports');
   return (
     <Layout>
       <h1 className="text-2xl font-semibold mb-3">Reportes</h1>
-      <DataTable data={rows} />
+      {isLoading && <p>Cargando reportes…</p>}
+      {reports && (
+        <div className="md2-card p-4">
+          <ul>
+            {reports.map(r => (
+              <li key={r.id} className="py-2 border-b flex justify-between">
+                <div>
+                  <div className="font-semibold">{r.name}</div>
+                  <div className="text-xs opacity-70">Creado: {new Date(r.createdAt).toLocaleString()}</div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Link to={`/reports/${r.id}`} className="btn-glass">Ver</Link>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </Layout>
   );
 }

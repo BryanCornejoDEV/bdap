@@ -4,4 +4,12 @@ import react from '@vitejs/plugin-react'
 // Tailwind v3 se ejecuta vía PostCSS (postcss.config.js). No usamos el plugin de v4.
 export default defineConfig({
   plugins: [react()],
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:4000',
+        changeOrigin: true,
+      },
+    },
+  },
 })

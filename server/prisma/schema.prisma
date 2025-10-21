@@ -1,0 +1,65 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  role      String   @default("analyst")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  memberships Membership[]
+}
+
+model Report {
+  id        Int      @id @default(autoincrement())
+  name      String
+  org       Organization @relation(fields: [orgId], references: [id])
+  orgId     Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  rows      MetricRecord[]
+}
+
+model MetricRecord {
+  id       Int    @id @default(autoincrement())
+  report   Report @relation(fields: [reportId], references: [id])
+  reportId Int
+  month    String
+  revenue  Int
+  orders   Int
+}
+
+model IntegrationConfig {
+  id        Int      @id @default(autoincrement())
+  provider  String
+  config    String
+  org       Organization @relation(fields: [orgId], references: [id])
+  orgId     Int
+  createdAt DateTime @default(now())
+}
+
+model Organization {
+  id        Int          @id @default(autoincrement())
+  name      String
+  createdAt DateTime     @default(now())
+  reports   Report[]
+  configs   IntegrationConfig[]
+  members   Membership[]
+}
+
+model Membership {
+  user     User @relation(fields: [userId], references: [id])
+  userId   Int
+  org      Organization @relation(fields: [orgId], references: [id])
+  orgId    Int
+  role     String  @default("member")
+  createdAt DateTime @default(now())
+  @@id([userId, orgId])
+}
