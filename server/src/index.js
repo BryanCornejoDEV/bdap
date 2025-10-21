@@ -14,6 +14,15 @@ import usersRouter from './routes/users.js';
 import organizationsRouter from './routes/organizations.js';
 
 const app = express();
+// Temporary fallback: if DATABASE_URL is not set (e.g., on Render), use a local SQLite file.
+// WARNING: This is only intended as a short-term convenience. Using SQLite on ephemeral
+// hosting (Render) is not suitable for production. Prefer setting a persistent Postgres
+// and configuring DATABASE_URL in the service environment variables.
+if (!process.env.DATABASE_URL) {
+  console.warn('DATABASE_URL not set — falling back to SQLite dev.db (not for production)');
+  process.env.DATABASE_URL = 'file:./dev.db';
+}
+
 const prisma = new PrismaClient();
 const PORT = process.env.PORT || 4000;
 

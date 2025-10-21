@@ -1,7 +1,17 @@
 import axios from "axios";
 
+function normalizeBase() {
+	const base = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || null;
+	if (!base) return 'https://bdap.onrender.com/api';
+	// remove trailing slash
+	const b = base.replace(/\/+$/,'');
+	// if already ends with /api, return as-is
+	if (b.endsWith('/api')) return b;
+	return b + '/api';
+}
+
 const api = axios.create({
-	baseURL: import.meta.env.VITE_API_BASE_URL || "/api",
+	baseURL: normalizeBase(),
 	timeout: 15000,
 });
 
