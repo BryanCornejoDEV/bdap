@@ -5,14 +5,20 @@ import { useAuth } from "../auth/AuthContext";
 import { useQueryClient } from "@tanstack/react-query";
 import api from "../services/apiClient";
 import { IconPlus, IconTrash } from "../components/icons";
+import ConfirmModal from "../components/ConfirmModal";
+import { useToast } from "../context/ToastContext";
 
 export default function Users() {
   const qc = useQueryClient();
+  const toast = useToast();
   const { user: me } = useAuth();
   const { data, isLoading, isError } = useGet("/users");
   const [form, setForm] = useState({ email: "", password: "", role: "analyst" });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+
+  const [userToDelete, setUserToDelete] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
   const refresh = () => qc.invalidateQueries({ queryKey: ["/users"] });
 
@@ -24,8 +30,11 @@ export default function Users() {
       await api.post("/users", form);
       await refresh();
       setForm({ email: "", password: "", role: "analyst" });
+      toast.success("Usuario creado con éxito");
     } catch (err) {
-      setError(err?.response?.data?.error || "No se pudo crear el usuario");
+      const msg = err?.response?.data?.error || "No se pudo crear el usuario";
+      setError(msg);
+      toast.error(msg);
     } finally {
       setSaving(false);
     }
@@ -36,19 +45,29 @@ export default function Users() {
     try {
       await api.patch(`/users/${id}`, { role });
       await refresh();
+      toast.success("Rol actualizado");
     } catch (err) {
-      setError(err?.response?.data?.error || "No se pudo cambiar el rol");
+      const msg = err?.response?.data?.error || "No se pudo cambiar el rol";
+      setError(msg);
+      toast.error(msg);
     }
   };
 
-  const remove = async (id, email) => {
-    if (!window.confirm(`¿Eliminar al usuario ${email}?`)) return;
+  const confirmRemove = async () => {
+    if (!userToDelete) return;
+    setDeleting(true);
     setError("");
     try {
-      await api.delete(`/users/${id}`);
+      await api.delete(`/users/${userToDelete.id}`);
       await refresh();
+      toast.success(`Usuario ${userToDelete.email} eliminado`);
     } catch (err) {
-      setError(err?.response?.data?.error || "No se pudo eliminar el usuario");
+      const msg = err?.response?.data?.error || "No se pudo eliminar el usuario";
+      setError(msg);
+      toast.error(msg);
+    } finally {
+      setDeleting(false);
+      setUserToDelete(null);
     }
   };
 
@@ -67,7 +86,7 @@ export default function Users() {
             type="email"
             required
             value={form.email}
-            onChange={(e)=>setForm(f=>({...f,email:e.target.value}))}
+            onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
             className="input"
             aria-label="Email"
           />
@@ -77,13 +96,13 @@ export default function Users() {
             required
             minLength={8}
             value={form.password}
-            onChange={(e)=>setForm(f=>({...f,password:e.target.value}))}
+            onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
             className="input"
             aria-label="Password"
           />
           <select
             value={form.role}
-            onChange={(e)=>setForm(f=>({...f,role:e.target.value}))}
+            onChange={(e) => setForm((f) => ({ ...f, role: e.target.value }))}
             className="select"
             aria-label="Rol"
           >
@@ -123,7 +142,7 @@ export default function Users() {
                     <td>
                       <select
                         value={u.role}
-                        onChange={(e)=>changeRole(u.id, e.target.value)}
+                        onChange={(e) => changeRole(u.id, e.target.value)}
                         className="select select-sm w-28"
                         disabled={u.id === me?.sub}
                         title={u.id === me?.sub ? "No puedes cambiar tu propio rol" : "Cambiar rol"}
@@ -137,7 +156,7 @@ export default function Users() {
                     <td className="text-right w-14">
                       {u.id !== me?.sub && (
                         <button
-                          onClick={()=>remove(u.id, u.email)}
+                          onClick={() => setUserToDelete(u)}
                           className="btn btn-danger btn-sm btn-icon"
                           title="Eliminar usuario"
                           aria-label={`Eliminar ${u.email}`}
@@ -153,6 +172,16 @@ export default function Users() {
           </div>
         </div>
       )}
+
+      <ConfirmModal
+        isOpen={userToDelete !== null}
+        onClose={() => setUserToDelete(null)}
+        onConfirm={confirmRemove}
+        title="¿Eliminar usuario?"
+        message={`¿Estás seguro de que deseas revocar el acceso y eliminar la cuenta de ${userToDelete?.email}?`}
+        confirmText="Eliminar usuario"
+        loading={deleting}
+      />
     </Layout>
   );
 }

@@ -1,0 +1,53 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: bdap-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: bdap
+      POSTGRES_USER: bdap_admin
+      POSTGRES_PASSWORD: bdap_secure_password_2026
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - bdap-network
+
+  backend:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: bdap-backend
+    restart: always
+    ports:
+      - "4000:4000"
+    environment:
+      DATABASE_URL: "file:../prisma/dev.db"
+      JWT_SECRET: "bdap_production_jwt_secret_key_change_in_prod"
+      PORT: 4000
+      NODE_ENV: "production"
+      CORS_ORIGIN: "http://localhost:5173,http://localhost:80,http://localhost"
+    networks:
+      - bdap-network
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: bdap-frontend
+    restart: always
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+    networks:
+      - bdap-network
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  bdap-network:
+    driver: bridge

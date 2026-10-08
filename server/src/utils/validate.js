@@ -56,4 +56,11 @@ export const schemas = {
     role: z.enum(['admin', 'analyst']).optional(),
     password: z.string().min(8, 'La password debe tener al menos 8 caracteres').optional(),
   }).refine((d) => d.role || d.password, { message: 'Nada que actualizar' }),
+  bulkRowsCreate: z.object({
+    rows: z.array(z.object({
+      month: z.string().trim().min(1, 'month requerido').max(50),
+      revenue: z.coerce.number().int('revenue debe ser entero').min(0),
+      orders: z.coerce.number().int('orders debe ser entero').min(0),
+    })).min(1, 'Se requiere al menos una fila').max(5000, 'Máximo 5,000 filas por lote'),
+  }),
 };

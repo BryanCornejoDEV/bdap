@@ -3,9 +3,9 @@ import { useAuth } from "../auth/AuthContext";
 import ThemeToggle from "./ThemeToggle";
 import { useEffect, useState } from "react";
 import api from "../services/apiClient";
-import { IconLogo, IconLogout, IconOrg } from "./icons";
+import { IconLogo, IconLogout, IconOrg, IconMenu } from "./icons";
 
-export default function NavBar() {
+export default function NavBar({ onToggleMobileMenu }) {
   const { user, logout, switchOrg } = useAuth();
   const [orgs, setOrgs] = useState([]);
   const [loadingOrgs, setLoadingOrgs] = useState(false);
@@ -25,7 +25,9 @@ export default function NavBar() {
       }
     };
     load();
-    return () => { active = false; };
+    return () => {
+      active = false;
+    };
   }, [user]);
 
   return (
@@ -34,7 +36,18 @@ export default function NavBar() {
       style={{ background: "color-mix(in srgb, var(--surface) 85%, transparent)", borderColor: "var(--border)" }}
     >
       <div className="h-full px-4 md:px-8 flex items-center gap-3">
-        {/* Marca visible solo en móvil (sidebar oculto) */}
+        {/* Botón menú hamburguesa en móvil */}
+        <button
+          type="button"
+          onClick={onToggleMobileMenu}
+          className="md:hidden btn btn-ghost btn-sm btn-icon -ml-1"
+          title="Abrir menú"
+          aria-label="Abrir menú"
+        >
+          <IconMenu size={20} />
+        </button>
+
+        {/* Marca visible solo en móvil (sidebar desktop oculto) */}
         <Link to="/" className="md:hidden flex items-center gap-2 font-semibold">
           <span
             className="w-7 h-7 rounded-lg grid place-items-center text-white"
@@ -47,10 +60,10 @@ export default function NavBar() {
 
         <div className="ml-auto flex items-center gap-2.5">
           {user?.orgId != null && orgs.length > 0 && (
-            <div className="hidden sm:flex items-center gap-1.5 text-muted">
-              <IconOrg size={16} />
+            <div className="flex items-center gap-1.5 text-muted">
+              <IconOrg size={16} className="hidden sm:inline" />
               <select
-                className="select select-sm w-44"
+                className="select select-sm w-36 sm:w-44 text-xs sm:text-sm"
                 value={user.orgId ?? ""}
                 onChange={(e) => switchOrg(Number(e.target.value))}
                 disabled={loadingOrgs}

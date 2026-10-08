@@ -1,6 +1,7 @@
 import { Suspense, lazy, Component } from "react";
 import { Routes, Route } from "react-router-dom";
 import ProtectedRoute from "./routes/ProtectedRoute";
+import { ToastProvider } from "./context/ToastContext";
 
 const Login = lazy(() => import("./pages/Login"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
@@ -47,23 +48,25 @@ function Loader() {
 export default function App(){
 	return (
 		<ErrorBoundary>
-			<Suspense fallback={<Loader />}>
-				<Routes>
-					<Route path="/login" element={<Login />} />
-					<Route path="/" element={<ProtectedRoute roles={["admin","analyst"]} /> }>
-						<Route index element={<Dashboard />} />
-						<Route path="reports" element={<Reports />} />
-						<Route path="reports/:id" element={<ReportDetail />} />
-						<Route path="integrations" element={<Integrations />} />
-						<Route path="profile" element={<Profile />} />
-						<Route path="settings" element={<Settings />} />
-						<Route element={<ProtectedRoute roles={["admin"]} />}>
-							<Route path="users" element={<Users />} />
+			<ToastProvider>
+				<Suspense fallback={<Loader />}>
+					<Routes>
+						<Route path="/login" element={<Login />} />
+						<Route path="/" element={<ProtectedRoute roles={["admin","analyst"]} /> }>
+							<Route index element={<Dashboard />} />
+							<Route path="reports" element={<Reports />} />
+							<Route path="reports/:id" element={<ReportDetail />} />
+							<Route path="integrations" element={<Integrations />} />
+							<Route path="profile" element={<Profile />} />
+							<Route path="settings" element={<Settings />} />
+							<Route element={<ProtectedRoute roles={["admin"]} />}>
+								<Route path="users" element={<Users />} />
+							</Route>
 						</Route>
-					</Route>
-					<Route path="*" element={<NotFound />} />
-				</Routes>
-			</Suspense>
+						<Route path="*" element={<NotFound />} />
+					</Routes>
+				</Suspense>
+			</ToastProvider>
 		</ErrorBoundary>
 	);
 }

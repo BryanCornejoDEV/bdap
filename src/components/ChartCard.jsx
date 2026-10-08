@@ -1,6 +1,6 @@
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer, Bar, BarChart,
+  ResponsiveContainer, Bar, BarChart, AreaChart, Area,
 } from "recharts";
 import { useIsDark } from "../hooks/useTheme";
 
@@ -48,7 +48,43 @@ export default function ChartCard({ title, subtitle, type = "line", data, xKey, 
       </div>
       <div style={{ width: "100%", height: 260 }}>
         <ResponsiveContainer>
-          {type === "line" ? (
+          {type === "area" ? (
+            <AreaChart data={data} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
+              <defs>
+                {series.map((s, i) => {
+                  const color = theme.series[(s.colorIndex ?? i) % theme.series.length];
+                  return (
+                    <linearGradient key={`grad-${s.dataKey}`} id={`grad-${s.dataKey}`} x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor={color} stopOpacity={0.4} />
+                      <stop offset="95%" stopColor={color} stopOpacity={0.0} />
+                    </linearGradient>
+                  );
+                })}
+              </defs>
+              <CartesianGrid vertical={false} stroke={theme.grid} />
+              <XAxis dataKey={xKey} {...axisProps} />
+              <YAxis {...axisProps} width={52} tickFormatter={(v) => compact.format(v)} />
+              <Tooltip
+                content={<ChartTooltip formatLabel={labelOf} />}
+                cursor={{ stroke: theme.cursor, strokeDasharray: "3 3" }}
+              />
+              {series.map((s, i) => {
+                const color = theme.series[(s.colorIndex ?? i) % theme.series.length];
+                return (
+                  <Area
+                    key={s.dataKey}
+                    type="monotone"
+                    dataKey={s.dataKey}
+                    stroke={color}
+                    strokeWidth={2}
+                    fillOpacity={1}
+                    fill={`url(#grad-${s.dataKey})`}
+                    isAnimationActive={false}
+                  />
+                );
+              })}
+            </AreaChart>
+          ) : type === "line" ? (
             <LineChart data={data} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
               <CartesianGrid vertical={false} stroke={theme.grid} />
               <XAxis dataKey={xKey} {...axisProps} />
