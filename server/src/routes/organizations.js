@@ -1,8 +1,8 @@
 import { Router } from 'express';
-import { PrismaClient } from '@prisma/client';
+import prisma from '../lib/prisma.js';
 import { authMiddleware } from '../utils/auth.js';
+import { validateBody, schemas } from '../utils/validate.js';
 
-const prisma = new PrismaClient();
 const router = Router();
 
 router.use(authMiddleware);
@@ -33,10 +33,9 @@ router.get('/', async (req, res, next) => {
 });
 
 // Crear una organización y asignar al usuario como owner
-router.post('/', async (req, res, next) => {
+router.post('/', validateBody(schemas.orgCreate), async (req, res, next) => {
   try {
-    const { name } = req.body || {};
-    ensure(!!name, 400, 'name requerido');
+    const { name } = req.body;
     const org = await prisma.organization.create({ data: { name } });
     await prisma.membership.create({ data: { userId: req.user.sub, orgId: org.id, role: 'owner' } });
     res.status(201).json(org);
@@ -71,13 +70,13 @@ router.get('/:id/members', async (req, res, next) => {
 });
 
 // Agregar miembro a una organización (por userId o email)
-router.post('/:id/members', async (req, res, next) => {
+router.post('/:id/members', validateBody(schemas.memberAdd), async (req, res, next) => {
   try {
     const orgId = Number(req.params.id);
     const actor = await getMembership(req.user.sub, orgId);
     ensure(!!actor || req.user.role === 'admin', 403, 'Forbidden');
     ensure(actor?.role === 'owner' || req.user.role === 'admin', 403, 'Solo owner/admin');
-    const { userId, email, role = 'member' } = req.body || {};
+    const { userId, email, role } = req.body;
     let uid = userId;
     if (!uid && email) {
       const u = await prisma.user.findUnique({ where: { email } });

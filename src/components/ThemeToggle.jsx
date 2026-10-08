@@ -1,26 +1,23 @@
 import { useEffect, useState } from "react";
+import { IconSun, IconMoon } from "./icons";
 
 export default function ThemeToggle() {
-  const [dark, setDark] = useState(() => {
-    return localStorage.getItem("theme") === "dark";
-  });
+  const [dark, setDark] = useState(() => document.documentElement.classList.contains("dark"));
 
   useEffect(() => {
-    if (dark) {
-      document.documentElement.classList.add("dark");
-      localStorage.setItem("theme", "dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-      localStorage.setItem("theme", "light");
-    }
+    document.documentElement.classList.toggle("dark", dark);
+    localStorage.setItem("theme", dark ? "dark" : "light");
   }, [dark]);
 
   return (
     <button
       onClick={() => setDark(!dark)}
-      className="border px-3 py-1 rounded text-sm"
+      className="btn btn-ghost btn-sm btn-icon"
+      style={{ width: "1.875rem" }}
+      title={dark ? "Tema claro" : "Tema oscuro"}
+      aria-label={dark ? "Cambiar a tema claro" : "Cambiar a tema oscuro"}
     >
-      {dark ? "☀️ Claro" : "🌙 Oscuro"}
+      {dark ? <IconSun size={15} /> : <IconMoon size={15} />}
     </button>
   );
 }

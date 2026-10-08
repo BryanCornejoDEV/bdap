@@ -1,61 +1,191 @@
 @import "tailwindcss/tailwind.css";
 
-/* ===== Material Dashboard 2 Theme ===== */
+/* ===== BDAP Design System =====
+   Plataforma de analítica de datos: superficie limpia, jerarquía tipográfica
+   clara, un solo acento, bordes finos. Tokens light/dark. */
+
 :root{
-  --md-bg: #f5f7fb;           /* canvas */
-  --md-card: #ffffff;         /* cards */
-  --md-text: #2b3440;         /* primary text */
-  --md-text-muted: #6b7280;   /* secondary */
-  --md-border: #e5e7eb;       /* card borders */
-  --md-primary: #3b82f6;      /* blue-500 */
-  --md-primary-2: #06b6d4;    /* cyan-500 */
-  --md-success: #22c55e;
-  --md-warning: #f59e0b;
-  --md-danger:  #ef4444;
-  --md-shadow:  0 8px 22px rgba(0,0,0,.08);
-  --md-shadow-2:0 14px 30px rgba(0,0,0,.12);
+  --bg:            #f6f7f9;
+  --surface:       #ffffff;
+  --surface-2:     #f9fafb;
+  --border:        #e4e7ec;
+  --text:          #101828;
+  --text-2:        #475467;
+  --muted:         #667085;
+
+  --accent:        #2a78d6;
+  --accent-strong: #1c5cab;
+  --accent-soft:   #eaf2fc;
+  --accent-ink:    #ffffff;
+
+  --danger:        #d03b3b;
+  --danger-soft:   #fdf0f0;
+  --success:       #0a7d33;
+
+  /* charts (paleta validada CVD) */
+  --chart-1:       #2a78d6;
+  --chart-2:       #1baf7a;
+  --chart-grid:    #eceef2;
+
+  --shadow-1: 0 1px 2px rgba(16,24,40,.05);
+  --shadow-2: 0 4px 16px rgba(16,24,40,.08);
+
+  --radius: 12px;
+  --radius-sm: 8px;
 }
 
 .dark{
-  --md-bg: #0f1115;
-  --md-card: #171a21;
-  --md-text: #e5e7eb;
-  --md-text-muted: #9ca3af;
-  --md-border: #262a33;
-  --md-shadow: 0 10px 24px rgba(0,0,0,.45);
-  --md-shadow-2:0 16px 40px rgba(0,0,0,.55);
+  --bg:            #0e1013;
+  --surface:       #16181d;
+  --surface-2:     #1c1f26;
+  --border:        #262a31;
+  --text:          #f2f4f7;
+  --text-2:        #cdd3dd;
+  --muted:         #98a2b3;
+
+  --accent:        #3987e5;
+  --accent-strong: #5598e7;
+  --accent-soft:   rgba(57,135,229,.15);
+  --accent-ink:    #ffffff;
+
+  --danger:        #e66767;
+  --danger-soft:   rgba(230,103,103,.12);
+  --success:       #34c161;
+
+  --chart-1:       #3987e5;
+  --chart-2:       #199e70;
+  --chart-grid:    #23262d;
+
+  --shadow-1: 0 1px 2px rgba(0,0,0,.4);
+  --shadow-2: 0 8px 24px rgba(0,0,0,.45);
 }
 
-/* Canvas */
-body{ background: var(--md-bg); color: var(--md-text); }
-
-/* Helpers md2 */
-.md2-card{
-  background: var(--md-card);
-  border: 1px solid var(--md-border);
-  border-radius: 1rem;           /* rounded-2xl-ish */
-  box-shadow: var(--md-shadow);
-}
-.md2-card-lg{ border-radius: 1.25rem; box-shadow: var(--md-shadow-2); }
-
-.md2-chip{
-  display:inline-flex; align-items:center; gap:.5rem;
-  border-radius:.75rem; padding:.375rem .625rem;
-  background: #f3f4f6; color:#111827; font-size:.75rem; font-weight:600;
-}
-.dark .md2-chip{ background:#1f2430; color:#e5e7eb; }
-
-.md2-grad{ /* azul–cian para botones/activos */
-  background-image: linear-gradient(135deg, var(--md-primary), var(--md-primary-2));
-  color:white;
+html{ font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+body{
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
-/* Extras usados por componentes existentes */
-.glass{ background: rgba(255,255,255,0.4); border: 1px solid var(--md-border); }
-.dark .glass{ background: rgba(23,26,33,0.4); }
-.glass-strong{ background: rgba(255,255,255,0.7); }
-.dark .glass-strong{ background: rgba(23,26,33,0.7); }
-.inner-border{ box-shadow: inset 0 0 0 1px var(--md-border); }
-.btn-glass{ padding:.25rem .75rem; border:1px solid var(--md-border); border-radius:.5rem; }
-.pill{ display:inline-flex; align-items:center; gap:.25rem; padding:.25rem .5rem; border:1px solid var(--md-border); border-radius:9999px; font-size:.75rem; }
-.border-outer{ border-color: var(--md-border); }
+::selection{ background: var(--accent-soft); }
+
+/* ---- superficies ---- */
+.card{
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-1);
+}
+.card-hover{ transition: box-shadow .15s ease, border-color .15s ease; }
+.card-hover:hover{ box-shadow: var(--shadow-2); }
+
+/* ---- tipografía utilitaria ---- */
+.page-title{ font-size: 1.375rem; font-weight: 600; letter-spacing: -0.01em; }
+.page-sub{ font-size: .875rem; color: var(--muted); }
+.section-title{ font-size: .9375rem; font-weight: 600; }
+.text-muted{ color: var(--muted); }
+.text-secondary{ color: var(--text-2); }
+.num{ font-variant-numeric: tabular-nums; }
+
+/* ---- botones ---- */
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:.5rem;
+  height: 2.375rem; padding: 0 .875rem;
+  border-radius: var(--radius-sm);
+  font-size: .875rem; font-weight: 500;
+  border: 1px solid transparent;
+  transition: background .12s ease, border-color .12s ease, color .12s ease, opacity .12s ease;
+  cursor: pointer; white-space: nowrap;
+}
+.btn:disabled{ opacity: .55; cursor: not-allowed; }
+.btn:focus-visible{ outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.btn-primary{ background: var(--accent); color: var(--accent-ink); }
+.btn-primary:hover:not(:disabled){ background: var(--accent-strong); }
+
+.btn-ghost{ background: var(--surface); border-color: var(--border); color: var(--text-2); }
+.btn-ghost:hover:not(:disabled){ border-color: var(--muted); color: var(--text); }
+
+.btn-danger{ background: transparent; color: var(--danger); }
+.btn-danger:hover:not(:disabled){ background: var(--danger-soft); }
+
+.btn-sm{ height: 1.875rem; padding: 0 .625rem; font-size: .8125rem; border-radius: 6px; }
+.btn-icon{ width: 2.375rem; padding: 0; }
+
+/* ---- campos ---- */
+.field-label{
+  display:block; font-size:.8125rem; font-weight:500; color: var(--text-2);
+  margin-bottom:.375rem;
+}
+.input, .select{
+  width: 100%; height: 2.375rem; padding: 0 .75rem;
+  background: var(--surface); color: var(--text);
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  font-size: .875rem;
+  transition: border-color .12s ease, box-shadow .12s ease;
+}
+.input::placeholder{ color: var(--muted); }
+.input:focus, .select:focus{
+  outline: none; border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+.select{ appearance: none; padding-right: 2rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23667085' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right .625rem center;
+}
+.select-sm{ height: 1.875rem; font-size: .8125rem; }
+
+/* ---- chips / badges ---- */
+.chip{
+  display:inline-flex; align-items:center; gap:.375rem;
+  height: 1.5rem; padding: 0 .625rem; border-radius: 9999px;
+  font-size: .75rem; font-weight: 500;
+  background: var(--surface-2); border: 1px solid var(--border); color: var(--text-2);
+}
+.chip-accent{ background: var(--accent-soft); border-color: transparent; color: var(--accent-strong); }
+.dark .chip-accent{ color: var(--accent-strong); }
+
+/* ---- tabla ---- */
+.table{ width: 100%; font-size: .875rem; border-collapse: collapse; }
+.table thead th{
+  text-align: left; font-size: .75rem; font-weight: 600; text-transform: uppercase;
+  letter-spacing: .04em; color: var(--muted);
+  padding: .625rem .875rem; border-bottom: 1px solid var(--border);
+  background: var(--surface-2);
+}
+.table tbody td{
+  padding: .75rem .875rem; border-bottom: 1px solid var(--border);
+  color: var(--text-2);
+}
+.table tbody tr:last-child td{ border-bottom: none; }
+.table tbody tr{ transition: background .1s ease; }
+.table tbody tr:hover{ background: var(--surface-2); }
+
+/* ---- navegación lateral ---- */
+.nav-item{
+  display:flex; align-items:center; gap:.625rem;
+  padding: .5625rem .75rem; border-radius: var(--radius-sm);
+  font-size: .875rem; font-weight: 500; color: var(--text-2);
+  transition: background .12s ease, color .12s ease;
+}
+.nav-item:hover{ background: var(--surface-2); color: var(--text); }
+.nav-item.active{ background: var(--accent-soft); color: var(--accent-strong); }
+.dark .nav-item.active{ color: var(--accent-strong); }
+
+/* ---- charts (Recharts) ---- */
+.chart-tooltip{
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-2);
+  padding: .5rem .75rem;
+  font-size: .8125rem;
+}
+.recharts-text{ fill: var(--muted); font-size: .75rem; }
+
+/* ---- estados vacíos ---- */
+.empty{
+  display:grid; place-items:center; gap:.25rem;
+  padding: 2.5rem 1rem; text-align:center; color: var(--muted); font-size:.875rem;
+}

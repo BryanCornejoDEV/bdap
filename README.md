@@ -1,75 +1,84 @@
-# BDAP – Dashboard Analytics Platform
+# BDAP – Business Data Analyst Platform
 
-Aplicación React con Vite + Tailwind para mostrar KPIs, tablas y gráficos. Incluye autenticación sencilla con JWT simulado, integración con React Query y utilidades de exportación (PDF/Excel/CSV).
+Aplicación full-stack para KPIs, reportes, tablas y gráficos. Frontend React (Vite + Tailwind + React Query) y backend Express + Prisma con autenticación JWT real, multi-organización y control de roles.
 
-## Plataforma BDAP (Business Data Analyst Platform).
+## Stack
 
-## Backend (server)
+- **Frontend**: React 19, Vite, Tailwind, React Query v5, React Router v7, Recharts, axios
+- **Backend**: Express, Prisma (SQLite en dev / Postgres recomendado en prod), JWT, bcrypt, zod
+- **Exportación**: PDF (jsPDF), Excel (xlsx), CSV
 
-El backend usa Express + Prisma (SQLite).
+## Puesta en marcha (desarrollo)
 
-1) Instala dependencias del servidor:
+Requiere Node 18+.
 
-	- Ir a `server/` y ejecutar instalación.
+```bash
+# 1. Dependencias
+npm install
+cd server && npm install && cd ..
 
-2) Configura la base de datos:
+# 2. Base de datos (crea server/prisma/dev.db y datos de ejemplo)
+npm run db:push
+npm run db:seed
 
-	- Copia `server/.env.example` a `server/.env` si quieres personalizar.
-	- Empuja el esquema y corre el seed inicial.
+# 3. Backend en http://localhost:4000
+npm run dev:server:watch
 
-3) Ejecuta el servidor en http://localhost:4000
-
-## Frontend
-
-El frontend usa Vite. Durante desarrollo se usa proxy `/api` hacia el backend.
-
-1) Instala dependencias en la raíz.
-
-2) Ejecuta el modo dev en http://localhost:5173
+# 4. Frontend en http://localhost:5173 (proxy /api → :4000)
+npm run dev
+```
 
 Credenciales de ejemplo:
 
 - admin: `admin@bdap.local` / `admin123`
 - analyst: `analyst@bdap.local` / `analyst123`
 
-- Node 18+
-
-## Scripts
-- dev: iniciar servidor de desarrollo
-- build: compilar para producción
-- preview: servir build localmente
-- lint: ejecutar ESLint
-
 ## Variables de entorno
-Crear un archivo `.env` basado en `.env.example`:
 
-```
-VITE_API_BASE_URL=/api
-```
+### Backend (`server/.env`, ver `server/.env.example`)
 
-## Estructura
-- `src/auth`: contexto y hook de autenticación
-- `src/components`: Layout, NavBar, Sidebar, Charts, Table, etc.
-- `src/hooks`: hooks para datos (useApi)
-- `src/pages`: páginas (Dashboard, Reports, Login)
-- `src/services`: axios apiClient + integraciones
-- `src/utils`: exportación a PDF, Excel y CSV
+| Variable | Descripción |
+|---|---|
+| `DATABASE_URL` | Conexión Prisma. SQLite en dev; Postgres en producción. |
+| `JWT_SECRET` | **Obligatoria en producción** — el servidor no arranca sin ella con `NODE_ENV=production`. |
+| `JWT_EXPIRES_IN` | Duración del token (por defecto `7d`). |
+| `PORT` | Puerto del API (por defecto `4000`). |
+| `CORS_ORIGIN` | Orígenes permitidos en producción, separados por comas. |
 
-## Desarrollo
-1. Instala dependencias
-2. Crea `.env`
-3. Ejecuta `npm run dev`
+### Frontend (`.env`, ver `.env.example`)
 
-## Rutas principales (frontend)
+| Variable | Descripción |
+|---|---|
+| `VITE_API_BASE_URL` | URL base del API en producción. En dev no hace falta (se usa el proxy `/api`). |
 
-- `/` Dashboard
-- `/reports` Lista de reportes
-- `/reports/:id` Detalle del reporte (ver/añadir filas)
-- `/integrations` Integraciones (GA, Stripe, HubSpot - simuladas)
-- `/users` Gestión de usuarios (solo admin)
-- `/profile` Perfil del usuario
-- `/settings` Ajustes
+## API
 
-## Notas
-- El token es de demostración y no está firmado (solo para desarrollo). Implementar autenticación real en producción.
-- React Query está configurado con `staleTime` de 60s y `retry` mínimo.
+Todas las rutas (salvo login y health) requieren `Authorization: Bearer <token>`.
+
+- `GET /api/health`
+- `POST /api/auth/login` — con rate limit (10/min por IP)
+- `GET /api/auth/me` · `POST /api/auth/logout` · `POST /api/auth/change-password` · `POST /api/auth/switch-org`
+- `GET|POST /api/reports` · `GET|PUT|DELETE /api/reports/:id`
+- `GET|POST /api/reports/:id/rows` · `DELETE /api/reports/:id/rows/:rowId`
+- `GET|POST /api/users` · `PATCH|DELETE /api/users/:id` — solo admin
+- `GET|POST /api/organizations` · `GET /api/organizations/:id` · miembros: `GET|POST /:id/members`, `DELETE /:id/members/:userId`
+- `GET /api/integrations/*` — datos simulados (GA, Stripe, HubSpot)
+
+Seguridad implementada: hash bcrypt, JWT firmado con expiración, validación zod en todos los inputs, aislamiento multi-tenant (el header `x-org-id` solo se acepta si el usuario pertenece a esa organización), roles admin/analyst, helmet, CORS restringible.
+
+## Rutas del frontend
+
+- `/` Dashboard · `/reports` y `/reports/:id` · `/integrations` · `/users` (solo admin) · `/profile` · `/settings` (cambio de password) · `/login`
+
+## Despliegue en producción
+
+1. **Base de datos**: usar Postgres (cambia `provider` a `"postgresql"` en `server/prisma/schema.prisma` y define `DATABASE_URL`). SQLite en hosting efímero (Render) pierde los datos en cada deploy.
+2. **Backend**: `NODE_ENV=production`, `JWT_SECRET` fuerte y `CORS_ORIGIN` con el dominio del frontend. Arranque: `cd server && npm start`.
+3. **Frontend**: `npm run build` genera `dist/`; define `VITE_API_BASE_URL` apuntando al API.
+4. **Seed**: cambia las passwords de ejemplo tras el primer despliegue (desde `/settings` o `/users`).
+
+## Scripts (raíz)
+
+- `npm run dev` / `npm run build` / `npm run preview` / `npm run lint`
+- `npm run dev:server` / `npm run dev:server:watch`
+- `npm run db:push` / `npm run db:seed`

@@ -1,40 +1,95 @@
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Bar, BarChart, Legend } from "recharts";
+import {
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
+  ResponsiveContainer, Bar, BarChart,
+} from "recharts";
+import { useIsDark } from "../hooks/useTheme";
 
-export default function ChartCard({ title, type = "line", data, xKey, lines = [], bars = [] }) {
-	const palette = ["#3b82f6", "#06b6d4", "#22c55e", "#ef4444", "#f59e0b"];
-	return (
-		<div className="md2-card p-4">
-			<div className="flex items-center justify-between mb-2">
-				<h3 className="font-semibold">{title}</h3>
-				<span className="md2-chip">Live</span>
-			</div>
-			<div style={{ width: "100%", height: 280 }}>
-				<ResponsiveContainer>
-					{type === "line" ? (
-						<LineChart data={data}>
-							<CartesianGrid strokeDasharray="3 3" />
-							<XAxis dataKey={xKey} />
-							<YAxis />
-							<Tooltip />
-							<Legend />
-							{lines.map((l, i) => (
-								<Line key={l.dataKey} type="monotone" dataKey={l.dataKey} dot={false} stroke={palette[i % palette.length]} />
-							))}
-						</LineChart>
-					) : (
-						<BarChart data={data}>
-							<CartesianGrid strokeDasharray="3 3" />
-							<XAxis dataKey={xKey} />
-							<YAxis />
-							<Tooltip />
-							<Legend />
-							{bars.map((b, i) => (
-								<Bar key={b.dataKey} dataKey={b.dataKey} fill={palette[i % palette.length]} />
-							))}
-						</BarChart>
-					)}
-				</ResponsiveContainer>
-			</div>
-		</div>
-	);
+// Paleta categórica validada (CVD ΔE > 69, contraste OK) — light/dark
+const PALETTE = {
+  light: { series: ["#2a78d6", "#1baf7a"], grid: "#eceef2", cursor: "#c9cdd4" },
+  dark: { series: ["#3987e5", "#199e70"], grid: "#23262d", cursor: "#3a3f48" },
+};
+
+const compact = new Intl.NumberFormat("es", { notation: "compact", maximumFractionDigits: 1 });
+const full = new Intl.NumberFormat("es");
+
+function ChartTooltip({ active, payload, label, formatLabel }) {
+  if (!active || !payload?.length) return null;
+  return (
+    <div className="chart-tooltip">
+      <p className="font-medium mb-0.5">{label}</p>
+      {payload.map((p) => (
+        <p key={p.dataKey} className="flex items-center gap-1.5 text-secondary num">
+          <span className="w-2 h-2 rounded-full" style={{ background: p.color }} />
+          {formatLabel?.(p.dataKey) ?? p.dataKey}: <span className="font-medium">{full.format(p.value)}</span>
+        </p>
+      ))}
+    </div>
+  );
+}
+
+export default function ChartCard({ title, subtitle, type = "line", data, xKey, series = [] }) {
+  const dark = useIsDark();
+  const theme = PALETTE[dark ? "dark" : "light"];
+  const labelOf = (key) => series.find((s) => s.dataKey === key)?.label ?? key;
+
+  const axisProps = {
+    tickLine: false,
+    axisLine: false,
+    tick: { fontSize: 12 },
+    tickMargin: 8,
+  };
+
+  return (
+    <div className="card p-5">
+      <div className="mb-4">
+        <h3 className="section-title">{title}</h3>
+        {subtitle && <p className="text-xs text-muted mt-0.5">{subtitle}</p>}
+      </div>
+      <div style={{ width: "100%", height: 260 }}>
+        <ResponsiveContainer>
+          {type === "line" ? (
+            <LineChart data={data} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
+              <CartesianGrid vertical={false} stroke={theme.grid} />
+              <XAxis dataKey={xKey} {...axisProps} />
+              <YAxis {...axisProps} width={52} tickFormatter={(v) => compact.format(v)} />
+              <Tooltip
+                content={<ChartTooltip formatLabel={labelOf} />}
+                cursor={{ stroke: theme.cursor, strokeDasharray: "3 3" }}
+              />
+              {series.map((s, i) => (
+                <Line
+                  key={s.dataKey}
+                  type="monotone"
+                  dataKey={s.dataKey}
+                  stroke={theme.series[(s.colorIndex ?? i) % theme.series.length]}
+                  strokeWidth={2}
+                  dot={false}
+                  activeDot={{ r: 4, strokeWidth: 0 }}
+                  isAnimationActive={false}
+                />
+              ))}
+            </LineChart>
+          ) : (
+            <BarChart data={data} margin={{ top: 4, right: 8, left: 0, bottom: 0 }} barCategoryGap="28%">
+              <CartesianGrid vertical={false} stroke={theme.grid} />
+              <XAxis dataKey={xKey} {...axisProps} />
+              <YAxis {...axisProps} width={52} tickFormatter={(v) => compact.format(v)} />
+              <Tooltip content={<ChartTooltip formatLabel={labelOf} />} cursor={{ fill: theme.grid, opacity: 0.5 }} />
+              {series.map((s, i) => (
+                <Bar
+                  key={s.dataKey}
+                  dataKey={s.dataKey}
+                  fill={theme.series[(s.colorIndex ?? i) % theme.series.length]}
+                  radius={[4, 4, 0, 0]}
+                  maxBarSize={36}
+                  isAnimationActive={false}
+                />
+              ))}
+            </BarChart>
+          )}
+        </ResponsiveContainer>
+      </div>
+    </div>
+  );
 }

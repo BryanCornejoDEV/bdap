@@ -1,10 +1,20 @@
 <!doctype html>
-<html lang="en">
+<html lang="es">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/png" href="/Logo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>BDAP Analysis</title>
+    <meta name="description" content="BDAP — Plataforma de análisis de datos de negocio: KPIs, reportes y gráficos." />
+    <title>BDAP — Business Data Analytics</title>
+    <script>
+      // Aplicar tema antes del primer render para evitar flash
+      try {
+        var t = localStorage.getItem("theme");
+        if (t === "dark" || (!t && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
+          document.documentElement.classList.add("dark");
+        }
+      } catch (e) { /* noop */ }
+    </script>
   </head>
   <body>
     <div id="root"></div>

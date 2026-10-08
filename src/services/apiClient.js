@@ -2,7 +2,8 @@ import axios from "axios";
 
 function normalizeBase() {
 	const base = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || null;
-	if (!base) return 'https://bdap.onrender.com/api';
+	// En desarrollo, usar el proxy de Vite (/api → localhost:4000)
+	if (!base) return import.meta.env.DEV ? '/api' : 'https://bdap.onrender.com/api';
 	// remove trailing slash
 	const b = base.replace(/\/+$/,'');
 	// if already ends with /api, return as-is

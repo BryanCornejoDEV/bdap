@@ -4,26 +4,38 @@ import api from "../services/apiClient";
 
 const AuthCtx = createContext();
 
+// Decodifica el token y devuelve null si es inválido o está expirado
+function decodeToken(t) {
+  if (!t) return null;
+  try {
+    const decoded = jwtDecode(t); // { sub, email, role, orgId, exp, iat }
+    if (decoded.exp && decoded.exp * 1000 <= Date.now()) return null;
+    return decoded;
+  } catch {
+    return null;
+  }
+}
+
 export function AuthProvider({ children }) {
-  const [token, setToken] = useState(() => localStorage.getItem("bdap_token"));
-  const [user, setUser] = useState(() => {
+  const [token, setToken] = useState(() => {
     const t = localStorage.getItem("bdap_token");
-    if (!t) return null;
-    try {
-      return jwtDecode(t); // { sub, email, role, iat, ... }
-    } catch {
+    if (t && !decodeToken(t)) {
+      localStorage.removeItem("bdap_token");
       return null;
     }
+    return t;
   });
+  const [user, setUser] = useState(() => decodeToken(localStorage.getItem("bdap_token")));
 
   useEffect(() => {
     if (token) {
-      localStorage.setItem("bdap_token", token);
-      try {
-        setUser(jwtDecode(token));
-      } catch {
-        setUser(null);
+      const decoded = decodeToken(token);
+      if (!decoded) {
+        setToken(null);
+        return;
       }
+      localStorage.setItem("bdap_token", token);
+      setUser(decoded);
     } else {
       localStorage.removeItem("bdap_token");
       setUser(null);

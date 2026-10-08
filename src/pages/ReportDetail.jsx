@@ -1,63 +1,130 @@
 import { useState } from "react";
 import Layout from "../components/Layout";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { useGet } from "../hooks/useApi";
-import { addRow } from "../services/reports";
+import { addRow, deleteRow } from "../services/reports";
 import { useQueryClient } from "@tanstack/react-query";
+import { exportToPDF, exportToExcel, exportToCSV } from "../utils/export";
+import { IconPlus, IconTrash } from "../components/icons";
+
+const num = new Intl.NumberFormat("es");
 
 export default function ReportDetail() {
   const { id } = useParams();
   const qc = useQueryClient();
-  const { data: rows, isLoading } = useGet(`/reports/${id}/rows`);
+  const { data: report } = useGet(`/reports/${id}`);
+  const { data: rows, isLoading, isError } = useGet(`/reports/${id}/rows`);
   const [form, setForm] = useState({ month: "", revenue: "", orders: "" });
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+
+  const title = report?.name || `Reporte ${id}`;
+  const refresh = () => qc.invalidateQueries({ queryKey: [`/reports/${id}/rows`] });
 
   const submit = async (e) => {
     e.preventDefault();
     setSaving(true);
+    setError("");
     try {
       await addRow(Number(id), { month: form.month, revenue: Number(form.revenue), orders: Number(form.orders) });
-      await qc.invalidateQueries([`/reports/${id}/rows`]);
+      await refresh();
       setForm({ month: "", revenue: "", orders: "" });
     } catch (err) {
-      console.error(err);
+      setError(err?.response?.data?.error || "No se pudo agregar la fila");
     } finally {
       setSaving(false);
     }
   };
 
+  const removeRow = async (rowId) => {
+    setError("");
+    try {
+      await deleteRow(Number(id), rowId);
+      await refresh();
+    } catch (err) {
+      setError(err?.response?.data?.error || "No se pudo eliminar la fila");
+    }
+  };
+
+  const exportRows = (rows || []).map((r) => ({ Mes: r.month, Ingresos: r.revenue, Órdenes: r.orders }));
+
   return (
     <Layout>
-      <div className="flex items-center gap-2 text-sm opacity-70 mb-2">
-        <span>📄</span>
-        <span>/</span>
-        <span>Reporte {id}</span>
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <nav className="text-[13px] text-muted mb-1" aria-label="Breadcrumb">
+            <Link to="/reports" className="hover:underline">Reportes</Link>
+            <span className="mx-1.5">/</span>
+            <span>{title}</span>
+          </nav>
+          <h1 className="page-title">{title}</h1>
+        </div>
+        {rows?.length > 0 && (
+          <div className="flex items-center gap-1.5">
+            <button className="btn btn-ghost btn-sm" onClick={() => exportToPDF({ title, rows: exportRows })}>PDF</button>
+            <button className="btn btn-ghost btn-sm" onClick={() => exportToExcel({ sheetName: title, rows: exportRows })}>Excel</button>
+            <button className="btn btn-ghost btn-sm" onClick={() => exportToCSV({ filename: `${title}.csv`, rows: exportRows })}>CSV</button>
+          </div>
+        )}
       </div>
-      <h1 className="text-2xl font-semibold mb-3">Reporte {id}</h1>
 
-      <div className="md2-card p-4 mb-4">
+      <div className="card p-5">
+        <h2 className="section-title mb-3">Agregar registro</h2>
         <form onSubmit={submit} className="grid grid-cols-1 md:grid-cols-4 gap-2">
-          <input placeholder="Mes" required value={form.month} onChange={(e)=>setForm(f=>({...f,month:e.target.value}))} className="border p-2 rounded" />
-          <input placeholder="Revenue" required value={form.revenue} onChange={(e)=>setForm(f=>({...f,revenue:e.target.value}))} className="border p-2 rounded" />
-          <input placeholder="Orders" required value={form.orders} onChange={(e)=>setForm(f=>({...f,orders:e.target.value}))} className="border p-2 rounded" />
-          <button disabled={saving} className="md2-grad text-white px-4 py-2 rounded">{saving?"Guardando...":"Agregar fila"}</button>
+          <input placeholder="Mes (ej. Jul)" required value={form.month} onChange={(e)=>setForm(f=>({...f,month:e.target.value}))} className="input" aria-label="Mes" />
+          <input placeholder="Ingresos" required type="number" min="0" value={form.revenue} onChange={(e)=>setForm(f=>({...f,revenue:e.target.value}))} className="input" aria-label="Ingresos" />
+          <input placeholder="Órdenes" required type="number" min="0" value={form.orders} onChange={(e)=>setForm(f=>({...f,orders:e.target.value}))} className="input" aria-label="Órdenes" />
+          <button disabled={saving} className="btn btn-primary">
+            <IconPlus size={16} />
+            {saving ? "Guardando…" : "Agregar"}
+          </button>
         </form>
+        {error && <p className="text-sm mt-2" style={{ color: "var(--danger)" }}>{error}</p>}
       </div>
 
-      {isLoading && <p>Cargando filas…</p>}
-      {!isLoading && (!rows || rows.length === 0) && <p>No hay filas</p>}
-      {rows && (
-        <div className="md2-card p-4">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="glass-strong"><th className="px-3 py-2">Mes</th><th className="px-3 py-2">Revenue</th><th className="px-3 py-2">Orders</th></tr>
-            </thead>
-            <tbody>
-              {rows.map(r=> (
-                <tr key={r.id} className="border-t"><td className="px-3 py-2">{r.month}</td><td className="px-3 py-2">{r.revenue}</td><td className="px-3 py-2">{r.orders}</td></tr>
-              ))}
-            </tbody>
-          </table>
+      {isLoading && <p className="text-muted text-sm">Cargando filas…</p>}
+      {isError && <p className="text-sm" style={{ color: "var(--danger)" }}>Error cargando filas</p>}
+
+      {!isLoading && (!rows || rows.length === 0) && (
+        <div className="card empty">
+          <p className="font-medium" style={{ color: "var(--text)" }}>Sin registros</p>
+          <p>Agrega el primer registro con el formulario de arriba.</p>
+        </div>
+      )}
+
+      {rows && rows.length > 0 && (
+        <div className="card overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Mes</th>
+                  <th className="!text-right">Ingresos</th>
+                  <th className="!text-right">Órdenes</th>
+                  <th aria-label="Acciones"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map(r=> (
+                  <tr key={r.id}>
+                    <td className="font-medium" style={{ color: "var(--text)" }}>{r.month}</td>
+                    <td className="text-right num">{num.format(r.revenue)}</td>
+                    <td className="text-right num">{num.format(r.orders)}</td>
+                    <td className="text-right w-14">
+                      <button
+                        onClick={()=>removeRow(r.id)}
+                        className="btn btn-danger btn-sm btn-icon"
+                        title="Eliminar fila"
+                        aria-label={`Eliminar fila ${r.month}`}
+                      >
+                        <IconTrash size={15} />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </Layout>

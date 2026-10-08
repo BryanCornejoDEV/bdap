@@ -1,95 +1,110 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import Layout from "../components/Layout";
-import FiltersBar from "../components/FiltersBar.jsx";
 import ChartCard from "../components/ChartCard.jsx";
 import { useGet } from "../hooks/useApi";
 
-// Usamos el primer reporte (seed)
-const DEFAULT_REPORT_ID = 1;
+const money = new Intl.NumberFormat("es", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
+const num = new Intl.NumberFormat("es");
 
-function StatCard({ icon = "📦", label, value, deltaText, color = "blue" }) {
-  const iconBg = {
-    blue: "linear-gradient(135deg,#3b82f6,#06b6d4)",
-    green: "linear-gradient(135deg,#22c55e,#16a34a)",
-    pink: "linear-gradient(135deg,#ec4899,#f43f5e)",
-  }[color] || "linear-gradient(135deg,#3b82f6,#06b6d4)";
+function StatCard({ label, value, hint }) {
   return (
-    <div className="md2-card p-4">
-      <div className="flex gap-3 items-start">
-        <div
-          className="rounded-xl text-white shadow"
-          style={{ background: iconBg, padding: ".65rem .75rem" }}
-        >
-          {icon}
-        </div>
-        <div className="ml-auto text-right">
-          <p className="text-sm text-[color:var(--md-text-muted)]">{label}</p>
-          <p className="text-2xl font-semibold">{value}</p>
-        </div>
-      </div>
-      {deltaText && (
-        <p className="text-sm mt-3" style={{ color: "#16a34a" }}>
-          {deltaText}
-        </p>
-      )}
+    <div className="card p-5">
+      <p className="text-[13px] text-muted">{label}</p>
+      <p className="text-2xl font-semibold num mt-1 tracking-tight">{value}</p>
+      {hint && <p className="text-xs text-muted mt-1">{hint}</p>}
     </div>
   );
 }
 
 export default function Dashboard() {
-  const [filters, setFilters] = useState({ range: "last_30", source: "all" });
-  const { data: rows } = useGet(`/reports/${DEFAULT_REPORT_ID}/rows`);
+  const { data: reports, isLoading: loadingReports } = useGet("/reports");
+  const [reportId, setReportId] = useState(null);
+
+  // Seleccionar el primer reporte disponible por defecto
+  useEffect(() => {
+    if (reportId == null && reports?.length) setReportId(reports[0].id);
+  }, [reports, reportId]);
+
+  const { data: rows, isLoading: loadingRows } = useGet(
+    `/reports/${reportId}/rows`,
+    {},
+    { enabled: reportId != null }
+  );
+
   const stats = useMemo(() => {
     const d = rows || [];
     const totalRevenue = d.reduce((a, r) => a + (r.revenue || 0), 0);
     const totalOrders = d.reduce((a, r) => a + (r.orders || 0), 0);
-    const bookings = d.length ? Math.round(totalOrders / d.length) : 0;
-    return { totalRevenue, totalOrders, bookings };
+    const avgTicket = totalOrders ? totalRevenue / totalOrders : 0;
+    return { totalRevenue, totalOrders, avgTicket, months: d.length };
   }, [rows]);
+
+  const currentReport = reports?.find((r) => r.id === reportId);
 
   return (
     <Layout>
-      <div className="flex items-center gap-2 text-sm opacity-70 mb-2">
-        <span>🏠</span>
-        <span>/</span>
-        <span>Dashboard</span>
-      </div>
-
-      <div className="flex items-end justify-between">
+      <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <p className="text-sm opacity-70">Bienvenido a</p>
-          <h1 className="text-4xl md:text-5xl font-semibold">BDAP</h1>
+          <h1 className="page-title">Dashboard</h1>
+          <p className="page-sub">Resumen de métricas del reporte seleccionado</p>
         </div>
-        <div className="md2-chip">Rango: {filters.range}</div>
+        {reports?.length > 0 && (
+          <div className="flex items-center gap-2">
+            <label htmlFor="report-select" className="text-[13px] text-muted">Reporte</label>
+            <select
+              id="report-select"
+              className="select w-56"
+              value={reportId ?? ""}
+              onChange={(e) => setReportId(Number(e.target.value))}
+            >
+              {reports.map((r) => (
+                <option key={r.id} value={r.id}>{r.name}</option>
+              ))}
+            </select>
+          </div>
+        )}
       </div>
 
-      <div className="mt-4">
-        <FiltersBar filters={filters} onChange={setFilters} />
-      </div>
+      {loadingReports && <p className="text-muted text-sm">Cargando…</p>}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-        <StatCard label="Bookings" value={String(stats.bookings)} deltaText="Demo" color="blue" icon="�" />
-        <StatCard label="Órdenes" value={String(stats.totalOrders)} deltaText="Acumulado" color="blue" icon="📊" />
-        <StatCard label="Ingresos" value={`$${stats.totalRevenue.toLocaleString()}`} deltaText="Acumulado" color="green" icon="🏬" />
-        <StatCard label="Seguidores" value="+91" deltaText="Demo" color="pink" icon="👥" />
-      </div>
+      {!loadingReports && !reports?.length && (
+        <div className="card empty">
+          <p className="font-medium" style={{ color: "var(--text)" }}>Sin datos todavía</p>
+          <p>Crea tu primer reporte en la sección Reportes para ver métricas aquí.</p>
+        </div>
+      )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-        <ChartCard
-          title="Ingresos por mes"
-          type="line"
-          data={rows || []}
-          xKey="month"
-          lines={[{ dataKey: "revenue" }]}
-        />
-        <ChartCard
-          title="Órdenes por mes"
-          type="bar"
-          data={rows || []}
-          xKey="month"
-          bars={[{ dataKey: "orders" }]}
-        />
-      </div>
+      {reportId != null && (
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <StatCard label="Ingresos totales" value={money.format(stats.totalRevenue)} hint="Acumulado del reporte" />
+            <StatCard label="Órdenes" value={num.format(stats.totalOrders)} hint="Acumulado del reporte" />
+            <StatCard label="Ticket promedio" value={money.format(stats.avgTicket)} hint="Ingresos / órdenes" />
+            <StatCard label="Periodos" value={num.format(stats.months)} hint="Meses registrados" />
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <ChartCard
+              title="Ingresos por mes"
+              subtitle={currentReport?.name}
+              type="line"
+              data={rows || []}
+              xKey="month"
+              series={[{ dataKey: "revenue", label: "Ingresos", colorIndex: 0 }]}
+            />
+            <ChartCard
+              title="Órdenes por mes"
+              subtitle={currentReport?.name}
+              type="bar"
+              data={rows || []}
+              xKey="month"
+              series={[{ dataKey: "orders", label: "Órdenes", colorIndex: 1 }]}
+            />
+          </div>
+
+          {loadingRows && <p className="text-muted text-sm">Cargando datos…</p>}
+        </>
+      )}
     </Layout>
   );
 }
