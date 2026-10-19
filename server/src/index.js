@@ -7,11 +7,16 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 
 import prisma from './lib/prisma.js';
+import { tenantTelemetryMiddleware } from './lib/tenantEngine.js';
 import authRouter from './routes/auth.js';
 import reportsRouter from './routes/reports.js';
 import integrationsRouter from './routes/integrations.js';
 import usersRouter from './routes/users.js';
 import organizationsRouter from './routes/organizations.js';
+import goalsRouter from './routes/goals.js';
+import workspaceRouter from './routes/workspace.js';
+import intelligenceRouter from './routes/intelligence.js';
+import auditRouter from './routes/audit.js';
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -30,12 +35,13 @@ if (isProduction && corsOrigins.length === 0) {
 app.set('trust proxy', true);
 app.use(helmet());
 app.use(cors({ origin: corsOrigins.length ? corsOrigins : true, credentials: true }));
-app.use(express.json({ limit: '1mb' }));
+app.use(express.json({ limit: '5mb' }));
 app.use(morgan(isProduction ? 'combined' : 'dev'));
+app.use(tenantTelemetryMiddleware);
 
 // health
 app.get('/api/health', (_req, res) => {
-  res.json({ ok: true, ts: new Date().toISOString() });
+  res.json({ ok: true, version: '2.0.0-enterprise', ts: new Date().toISOString() });
 });
 
 // routes
@@ -44,6 +50,10 @@ app.use('/api/reports', reportsRouter);
 app.use('/api/integrations', integrationsRouter);
 app.use('/api/users', usersRouter);
 app.use('/api/organizations', organizationsRouter);
+app.use('/api/goals', goalsRouter);
+app.use('/api/tasks', workspaceRouter);
+app.use('/api/intelligence', intelligenceRouter);
+app.use('/api/audit', auditRouter);
 
 // 404
 app.use((req, res) => {

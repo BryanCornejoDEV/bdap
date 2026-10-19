@@ -1,14 +1,14 @@
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
-import { jwtDecode } from "jwt-decode"; // <-- import nombrado (no default)
+import { createContext, useContext, useEffect, useMemo, useState, useCallback } from "react";
+import { jwtDecode } from "jwt-decode";
+import { useQueryClient } from "@tanstack/react-query";
 import api from "../services/apiClient";
 
 const AuthCtx = createContext();
 
-// Decodifica el token y devuelve null si es inválido o está expirado
 function decodeToken(t) {
   if (!t) return null;
   try {
-    const decoded = jwtDecode(t); // { sub, email, role, orgId, exp, iat }
+    const decoded = jwtDecode(t); // { sub, email, name, role, orgId, exp, iat }
     if (decoded.exp && decoded.exp * 1000 <= Date.now()) return null;
     return decoded;
   } catch {
@@ -17,6 +17,7 @@ function decodeToken(t) {
 }
 
 export function AuthProvider({ children }) {
+  const qc = useQueryClient();
   const [token, setToken] = useState(() => {
     const t = localStorage.getItem("bdap_token");
     if (t && !decodeToken(t)) {
@@ -48,20 +49,31 @@ export function AuthProvider({ children }) {
     return () => window.removeEventListener("bdap:unauthorized", onUnauthorized);
   }, []);
 
-  const login = async ({ email, password }) => {
-    // Autenticación real contra backend
+  const login = useCallback(async ({ email, password }) => {
     const { data } = await api.post("/auth/login", { email, password });
+    localStorage.setItem("bdap_token", data.token);
     setToken(data.token);
-  };
+    setUser(decodeToken(data.token));
+    qc.invalidateQueries();
+  }, [qc]);
 
-  const switchOrg = async (orgId) => {
-    const { data } = await api.post("/auth/switch-org", { orgId });
+  const switchOrg = useCallback(async (orgId) => {
+    const { data } = await api.post("/auth/switch-org", { orgId: Number(orgId) });
+    localStorage.setItem("bdap_token", data.token);
     setToken(data.token);
-  };
+    setUser(decodeToken(data.token));
+    qc.invalidateQueries();
+  }, [qc]);
 
-  const logout = () => setToken(null);
+  const logout = useCallback(() => {
+    setToken(null);
+    qc.clear();
+  }, [qc]);
 
-  const value = useMemo(() => ({ user, token, login, logout, switchOrg }), [user, token]);
+  const value = useMemo(
+    () => ({ user, token, login, logout, switchOrg }),
+    [user, token, login, logout, switchOrg]
+  );
   return <AuthCtx.Provider value={value}>{children}</AuthCtx.Provider>;
 }
 

@@ -8,58 +8,138 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  password  String
-  role      String   @default("analyst")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          Int          @id @default(autoincrement())
+  email       String       @unique
+  name        String       @default("")
+  password    String
+  role        String       @default("analyst")
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
   memberships Membership[]
 }
 
-model Report {
-  id        Int      @id @default(autoincrement())
-  name      String
-  org       Organization @relation(fields: [orgId], references: [id])
-  orgId     Int
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  rows      MetricRecord[]
-}
-
-model MetricRecord {
-  id       Int    @id @default(autoincrement())
-  report   Report @relation(fields: [reportId], references: [id])
-  reportId Int
-  month    String
-  revenue  Int
-  orders   Int
-}
-
-model IntegrationConfig {
-  id        Int      @id @default(autoincrement())
-  provider  String
-  config    String
-  org       Organization @relation(fields: [orgId], references: [id])
-  orgId     Int
-  createdAt DateTime @default(now())
-}
-
 model Organization {
-  id        Int          @id @default(autoincrement())
+  id        Int                 @id @default(autoincrement())
   name      String
-  createdAt DateTime     @default(now())
+  slug      String              @default("")
+  industry  String              @default("Tecnología & SaaS")
+  plan      String              @default("enterprise")
+  currency  String              @default("USD")
+  status    String              @default("active")
+  createdAt DateTime            @default(now())
+  updatedAt DateTime            @default(now()) @updatedAt
   reports   Report[]
   configs   IntegrationConfig[]
   members   Membership[]
+  goals     Goal[]
+  tasks     WorkspaceTask[]
+  auditLogs AuditLog[]
 }
 
 model Membership {
-  user     User @relation(fields: [userId], references: [id])
-  userId   Int
-  org      Organization @relation(fields: [orgId], references: [id])
-  orgId    Int
-  role     String  @default("member")
-  createdAt DateTime @default(now())
+  user       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     Int
+  org        Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  orgId      Int
+  role       String       @default("member")
+  department String       @default("Analítica")
+  createdAt  DateTime     @default(now())
+
   @@id([userId, orgId])
+  @@index([orgId])
 }
+
+model Report {
+  id          Int            @id @default(autoincrement())
+  name        String
+  description String         @default("")
+  category    String         @default("Finanzas")
+  org         Organization   @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  orgId       Int
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  rows        MetricRecord[]
+
+  @@index([orgId, createdAt])
+}
+
+model MetricRecord {
+  id        Int    @id @default(autoincrement())
+  report    Report @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  reportId  Int
+  month     String
+  revenue   Int
+  orders    Int
+  expenses  Int    @default(0)
+  customers Int    @default(0)
+
+  @@index([reportId])
+}
+
+model IntegrationConfig {
+  id        Int          @id @default(autoincrement())
+  provider  String
+  config    String
+  enabled   Boolean      @default(true)
+  org       Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  orgId     Int
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  @@unique([orgId, provider])
+  @@index([orgId])
+}
+
+model Goal {
+  id             Int          @id @default(autoincrement())
+  org            Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  orgId          Int
+  title          String
+  category       String       @default("Ventas")
+  targetValue    Float
+  currentValue   Float        @default(0)
+  unit           String       @default("USD")
+  deadline       String       @default("")
+  ownerName      String       @default("")
+  priority       String       @default("high")
+  status         String       @default("on_track")
+  linkedReportId Int?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([orgId, status])
+}
+
+model WorkspaceTask {
+  id             Int          @id @default(autoincrement())
+  org            Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  orgId          Int
+  title          String
+  description    String       @default("")
+  status         String       @default("backlog")
+  priority       String       @default("medium")
+  department     String       @default("Operaciones")
+  assignee       String       @default("")
+  dueDate        String       @default("")
+  estimatedHours Float        @default(0)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([orgId, status])
+}
+
+model AuditLog {
+  id        Int          @id @default(autoincrement())
+  org       Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  orgId     Int
+  userId    Int?
+  userEmail String
+  action    String
+  module    String
+  details   String       @default("")
+  ip        String       @default("")
+  createdAt DateTime     @default(now())
+
+  @@index([orgId, createdAt])
+}
+

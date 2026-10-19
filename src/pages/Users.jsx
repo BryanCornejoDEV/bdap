@@ -13,7 +13,7 @@ export default function Users() {
   const toast = useToast();
   const { user: me } = useAuth();
   const { data, isLoading, isError } = useGet("/users");
-  const [form, setForm] = useState({ email: "", password: "", role: "analyst" });
+  const [form, setForm] = useState({ name: "", email: "", password: "", role: "analyst" });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
@@ -29,8 +29,8 @@ export default function Users() {
     try {
       await api.post("/users", form);
       await refresh();
-      setForm({ email: "", password: "", role: "analyst" });
-      toast.success("Usuario creado con éxito");
+      setForm({ name: "", email: "", password: "", role: "analyst" });
+      toast.success("Usuario creado y asignado a la organización activa");
     } catch (err) {
       const msg = err?.response?.data?.error || "No se pudo crear el usuario";
       setError(msg);
@@ -45,7 +45,7 @@ export default function Users() {
     try {
       await api.patch(`/users/${id}`, { role });
       await refresh();
-      toast.success("Rol actualizado");
+      toast.success("Rol global actualizado");
     } catch (err) {
       const msg = err?.response?.data?.error || "No se pudo cambiar el rol";
       setError(msg);
@@ -74,15 +74,24 @@ export default function Users() {
   return (
     <Layout>
       <div>
-        <h1 className="page-title">Usuarios</h1>
-        <p className="page-sub">Gestiona el acceso a la plataforma</p>
+        <h1 className="page-title">Usuarios Globales del Sistema</h1>
+        <p className="page-sub">
+          Administración centralizada de cuentas, privilegios globales y membresías multi-empresa
+        </p>
       </div>
 
       <div className="card p-5">
-        <h2 className="section-title mb-3">Nuevo usuario</h2>
-        <form onSubmit={submit} className="grid grid-cols-1 md:grid-cols-4 gap-2">
+        <h2 className="section-title mb-3">Registrar nuevo usuario</h2>
+        <form onSubmit={submit} className="grid grid-cols-1 md:grid-cols-5 gap-2">
           <input
-            placeholder="Email"
+            placeholder="Nombre completo"
+            value={form.name}
+            onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+            className="input"
+            aria-label="Nombre"
+          />
+          <input
+            placeholder="Email corporativo"
             type="email"
             required
             value={form.email}
@@ -107,11 +116,11 @@ export default function Users() {
             aria-label="Rol"
           >
             <option value="analyst">Analyst</option>
-            <option value="admin">Admin</option>
+            <option value="admin">Admin Global</option>
           </select>
           <button disabled={saving} className="btn btn-primary">
             <IconPlus size={16} />
-            {saving ? "Creando…" : "Crear usuario"}
+            {saving ? "Creando…" : "Crear cuenta"}
           </button>
         </form>
         {error && <p className="text-sm mt-2" style={{ color: "var(--danger)" }}>{error}</p>}
@@ -126,9 +135,10 @@ export default function Users() {
             <table className="table">
               <thead>
                 <tr>
-                  <th>Usuario</th>
-                  <th>Rol</th>
-                  <th>Creado</th>
+                  <th>Colaborador</th>
+                  <th>Empresas Asignadas</th>
+                  <th>Rol Global</th>
+                  <th>Fecha Alta</th>
                   <th aria-label="Acciones"></th>
                 </tr>
               </thead>
@@ -136,23 +146,43 @@ export default function Users() {
                 {data.map((u) => (
                   <tr key={u.id}>
                     <td>
-                      <span className="font-medium" style={{ color: "var(--text)" }}>{u.email}</span>
-                      {u.id === me?.sub && <span className="chip chip-accent ml-2">Tú</span>}
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold" style={{ color: "var(--text)" }}>
+                          {u.name || u.email.split("@")[0]}
+                        </span>
+                        {u.id === me?.sub && <span className="chip chip-accent">Tú</span>}
+                      </div>
+                      <p className="text-xs text-muted">{u.email}</p>
+                    </td>
+                    <td>
+                      <div className="flex flex-wrap gap-1">
+                        {(u.memberships || []).map((m) => (
+                          <span key={m.orgId} className="chip !text-[11px]">
+                            {m.org?.name || `Org #${m.orgId}`} ({m.role})
+                          </span>
+                        ))}
+                      </div>
                     </td>
                     <td>
                       <select
                         value={u.role}
                         onChange={(e) => changeRole(u.id, e.target.value)}
-                        className="select select-sm w-28"
+                        className="select select-sm w-32"
                         disabled={u.id === me?.sub}
                         title={u.id === me?.sub ? "No puedes cambiar tu propio rol" : "Cambiar rol"}
                         aria-label={`Rol de ${u.email}`}
                       >
                         <option value="analyst">Analyst</option>
-                        <option value="admin">Admin</option>
+                        <option value="admin">Admin Global</option>
                       </select>
                     </td>
-                    <td className="num">{new Date(u.createdAt).toLocaleDateString("es", { day: "numeric", month: "short", year: "numeric" })}</td>
+                    <td className="num text-xs">
+                      {new Date(u.createdAt).toLocaleDateString("es", {
+                        day: "numeric",
+                        month: "short",
+                        year: "numeric",
+                      })}
+                    </td>
                     <td className="text-right w-14">
                       {u.id !== me?.sub && (
                         <button

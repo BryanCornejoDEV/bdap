@@ -182,3 +182,101 @@ export const IconFileSpreadsheet = (p) => (
   </Icon>
 );
 
+export const IconRefresh = (p) => (
+  <Icon {...p}>
+    <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+    <path d="M3 3v5h5" />
+    <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" />
+    <path d="M16 21h5v-5" />
+  </Icon>
+);
+
+export const IconKey = (p) => (
+  <Icon {...p}>
+    <path d="m21 2-2 2m-1.5 1.5L14 9l-1.5-1.5-1.5 1.5 1.5 1.5-3 3A5.5 5.5 0 1 1 5.5 8c1.3 0 2.5.4 3.5 1.2L12 6.3 10.5 4.8 12 3.3 13.5 4.8 17 1.3Z" />
+    <circle cx="7.5" cy="15.5" r="1.5" />
+  </Icon>
+);
+
+export const IconPlug = (p) => (
+  <Icon {...p}>
+    <path d="M12 22v-5" />
+    <path d="M9 8V2" />
+    <path d="M15 8V2" />
+    <path d="M18 8v5a6 6 0 0 1-12 0V8z" />
+  </Icon>
+);
+
+export const IconExternalLink = (p) => (
+  <Icon {...p}>
+    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+    <polyline points="15 3 21 3 21 9" />
+    <line x1="10" y1="14" x2="21" y2="3" />
+  </Icon>
+);
+
+export const IconTarget = (p) => (
+  <Icon {...p}>
+    <circle cx="12" cy="12" r="10" />
+    <circle cx="12" cy="12" r="6" />
+    <circle cx="12" cy="12" r="2" />
+  </Icon>
+);
+
+export const IconKanban = (p) => (
+  <Icon {...p}>
+    <rect x="3" y="3" width="5" height="18" rx="1" />
+    <rect x="10" y="3" width="5" height="12" rx="1" />
+    <rect x="17" y="3" width="4" height="15" rx="1" />
+  </Icon>
+);
+
+export const IconSparkles = (p) => (
+  <Icon {...p}>
+    <path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3L12 3Z" />
+    <path d="M5 3v4" />
+    <path d="M3 5h4" />
+  </Icon>
+);
+
+export const IconShield = (p) => (
+  <Icon {...p}>
+    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+    <path d="m9 12 2 2 4-4" />
+  </Icon>
+);
+
+export const IconSearch = (p) => (
+  <Icon {...p}>
+    <circle cx="11" cy="11" r="8" />
+    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+  </Icon>
+);
+
+export const IconTrendingUp = (p) => (
+  <Icon {...p}>
+    <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+    <polyline points="17 6 23 6 23 12" />
+  </Icon>
+);
+
+export const IconEdit = (p) => (
+  <Icon {...p}>
+    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+  </Icon>
+);
+
+export const IconActivity = (p) => (
+  <Icon {...p}>
+    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+  </Icon>
+);
+
+export const IconLayers = (p) => (
+  <Icon {...p}>
+    <polygon points="12 2 2 7 12 12 22 7 12 2" />
+    <polyline points="2 17 12 22 22 17" />
+    <polyline points="2 12 12 17 22 12" />
+  </Icon>
+);

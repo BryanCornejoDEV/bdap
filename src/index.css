@@ -145,6 +145,21 @@ body{
 }
 .chip-accent{ background: var(--accent-soft); border-color: transparent; color: var(--accent-strong); }
 .dark .chip-accent{ color: var(--accent-strong); }
+.chip-success{ background: rgba(10, 125, 51, 0.12); border-color: rgba(10, 125, 51, 0.25); color: var(--success); }
+.chip-warning{ background: rgba(217, 119, 6, 0.14); border-color: rgba(217, 119, 6, 0.28); color: #d97706; }
+.chip-danger{ background: var(--danger-soft); border-color: rgba(208, 59, 59, 0.25); color: var(--danger); }
+
+/* ---- barras de progreso ---- */
+.progress-track{
+  width: 100%; height: 0.5rem; border-radius: 9999px;
+  background: var(--surface-2); overflow: hidden;
+  border: 1px solid var(--border);
+}
+.progress-fill{
+  height: 100%; border-radius: 9999px;
+  background: var(--accent);
+  transition: width .25s ease;
+}
 
 /* ---- tabla ---- */
 .table{ width: 100%; font-size: .875rem; border-collapse: collapse; }
@@ -163,14 +178,19 @@ body{
 .table tbody tr:hover{ background: var(--surface-2); }
 
 /* ---- navegación lateral ---- */
+.nav-section-title{
+  font-size: 0.6875rem; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.06em; color: var(--muted);
+  padding: 0.75rem 0.75rem 0.25rem;
+}
 .nav-item{
   display:flex; align-items:center; gap:.625rem;
-  padding: .5625rem .75rem; border-radius: var(--radius-sm);
-  font-size: .875rem; font-weight: 500; color: var(--text-2);
+  padding: .5rem .75rem; border-radius: var(--radius-sm);
+  font-size: .84375rem; font-weight: 500; color: var(--text-2);
   transition: background .12s ease, color .12s ease;
 }
 .nav-item:hover{ background: var(--surface-2); color: var(--text); }
-.nav-item.active{ background: var(--accent-soft); color: var(--accent-strong); }
+.nav-item.active{ background: var(--accent-soft); color: var(--accent-strong); font-weight: 600; }
 .dark .nav-item.active{ color: var(--accent-strong); }
 
 /* ---- charts (Recharts) ---- */
@@ -189,3 +209,4 @@ body{
   display:grid; place-items:center; gap:.25rem;
   padding: 2.5rem 1rem; text-align:center; color: var(--muted); font-size:.875rem;
 }
+
